@@ -1,27 +1,42 @@
-library(fpc)
-getDBSCAN<-function(data) #data is the list of GPS coordinates, N is the MAX number of clusters to apply kmeans
+# Process all the files located at inDir and return in outDir
+# one clustered file per input file and a davies bouldin file
+# containing the number of clusters used at K-Means for each
+# input file plus the davies boulding number obtained.
+library(clusterSim)
+source(file = "getDBSCAN.R")
+calculateDBSCAN<-function(inDir,outDir)
 {
-  bestDBSCAN = dbscan(data, eps, MinPts = 10, scale = FALSE, method = "dist", seeds = TRUE, showplot = 1, countmode = NULL)
-  #Claculate Davies Bouldin
-  bestDB = index.DB(data,bestDBSCAN$cluster)
+  fileList = list.files(path = inDir)
+  fileList = fileList[1:5] # use only first 5 files
   
-  "bestDB = 999
-  for(i in 2:N)
+  bestDBVector = numeric(length(fileList)) #Create DB vector
+  clusterNumberVector = numeric(length(fileList)) #Create number of used clusters vector
+  
+  for (i in 1:length(fileList))
   {
-    #Calculate Kmeans for i
-    set.seed(38)
-    km = suppressWarnings( kmeans(data,i,nstart = 25))
+    inFilePath = paste(inDir,fileList[i],sep = '')
+    outFilePath = paste(outDir,fileList[i],sep = '')
     
-    #Claculate Davies Bouldin
-    db = index.DB(data,km$cluster)
+    assign(fileList[i], read.csv(inFilePath)) # Open file
     
-    if (db$DB < bestDB)
-    {
-      bestKM = km  
-      bestDB = db$DB
-      clusterNumber = i
-    }
-  }"
-  resultList = list("cluster" = bestDBSCAN, "DB" = bestDB)
-  return(resultList)
+    #CHANGE NUMBER OF CLUSTERS TO TRY TO 10!!!!!!!!!!!!!!!!!!!!!!!
+    KM = getKM(get(fileList[i]),2) # Obtain best cluster for file i
+    
+    # Save cluster to file in output directory
+    cluster = cbind(get(fileList[i])[1:2],KM$cluster$cluster);
+    colnames(cluster) <- c("latitude", "longitude", "cluster")
+    write.table(cluster,file = outFilePath,sep = ",", row.names = FALSE, col.names = FALSE)
+    
+    # Save Davies-Bouldin info
+    bestDBVector[i] = KM$DB
+    clusterNumberVector[i] = KM$clusterNumber
+    
+    # remove file from memory
+    #rm(list = fileList[i]) #Remove the object to free memory
+  }
+  
+  # Save Davies-Bouldin info to output dir with filename 'DBinfo'
+  DBInfo = cbind(bestDBVector,clusterNumberVector);
+  colnames(DBInfo) <- c("DBValues", "clusterNumber")
+  write.table(DBInfo,file = paste(outDir,"DBInfo",sep = ''),sep = ",", row.names = FALSE, col.names = FALSE)
 }
