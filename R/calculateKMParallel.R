@@ -17,25 +17,31 @@ calculateKM<-function(inDir,outDir)
     {
     inFilePath = paste(inDir,fileList[i],sep = '')
     outFilePath = paste(outDir,fileList[i],sep = '')
-    
-    assign(fileList[i], read.csv(inFilePath)) # Open file
-    
-    #CHANGE NUMBER OF CLUSTERS TO TRY TO 10!!!!!!!!!!!!!!!!!!!!!!!
-    KM = getKM(get(fileList[i]),10) # Obtain best cluster for file i
-    
-    # Save cluster to file in output directory
-    cluster = cbind(get(fileList[i])[1:2],KM$cluster$cluster);
-    colnames(cluster) <- c("latitude", "longitude", "cluster")
-    write.table(cluster,file = outFilePath,sep = ",", row.names = FALSE, col.names = FALSE)
-    
-    # return Davies-Bouldin info
-    return(c(KM$DB, KM$clusterNumber))
-
-    # remove file from memory
-    #rm(list = fileList[i]) #Remove the object to free memory
+    if (file.size(inFilePath) > 0)
+    {
+      assign(fileList[i], read.csv(inFilePath)) # Open file
+      
+      #CHANGE NUMBER OF CLUSTERS TO TRY TO 10!!!!!!!!!!!!!!!!!!!!!!!
+      KM = getKM(get(fileList[i]),10) # Obtain best cluster for file i
+      
+      # Save cluster to file in output directory
+      cluster = cbind(get(fileList[i])[1:2],KM$cluster$cluster);
+      colnames(cluster) <- c("latitude", "longitude", "cluster")
+      write.table(cluster,file = outFilePath,sep = ",", row.names = FALSE, col.names = FALSE)
+      
+      # return Davies-Bouldin info
+      return(cbind(fileList[i], KM$DB, KM$clusterNumber))
+  
+      # remove file from memory
+      #rm(list = fileList[i]) #Remove the object to free memory
+    }else
+    {
+      return(c(0,0))
+    }
   }
   
   # Save Davies-Bouldin info to output dir with filename 'DBinfo'
-  colnames(caca) <- c("DBValues", "clusterNumber")
+  colnames(caca) <- c("user", "DBValues", "clusterNumber")
   write.table(caca,file = paste(outDir,"DBInfo",sep = ''),sep = ",", row.names = FALSE, col.names = FALSE)
+  return(mean(as.numeric(caca[,2])))
 }

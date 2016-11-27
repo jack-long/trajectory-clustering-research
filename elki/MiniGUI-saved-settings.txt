@@ -1,0 +1,73 @@
+#Saved ELKI settings. First line is title, remaining lines are parameters.
+extractClusters
+de.lmu.ifi.dbs.elki.application.KDDCLIApplication
+-dbc.in
+/media/Datos/Dropbox/Master/S3/Research methodology and scientific writing/project/Data/reducedSet/021
+-algorithm
+clustering.optics.OPTICSXi
+-opticsxi.xi
+0.2
+-optics.minpts
+15
+
+extractClusters1
+de.lmu.ifi.dbs.elki.application.KDDCLIApplication
+-dbc.in
+/media/Datos/Dropbox/Master/S3/Research methodology and scientific writing/project/Data/reducedSet/021
+-algorithm
+clustering.optics.OPTICSXi
+-opticsxi.xi
+0.3
+-optics.minpts
+10
+
+extractClusters2
+-dbc.in
+/media/Datos/Dropbox/Master/S3/Research methodology and scientific writing/project/Data/reducedSet/157
+-algorithm
+clustering.optics.OPTICSXi
+-opticsxi.xi
+0.3
+-optics.minpts
+10
+
+extractClustersOutput
+-dbc.in
+/media/Datos/Dropbox/Master/S3/Research methodology and scientific writing/project/Data/reducedSet/021
+-algorithm
+clustering.optics.OPTICSXi
+-opticsxi.xi
+0.02
+-optics.minpts
+15
+-resulthandler
+ClusteringVectorDumper
+-clustering.output
+/media/Datos/Dropbox/Master/S3/Research methodology and scientific writing/project/trajectory-clustering-research/elki/optisoutput
+
+extractClustersbigfile
+de.lmu.ifi.dbs.elki.application.KDDCLIApplication
+-dbc.in
+/media/Datos/Dropbox/Master/S3/Research methodology and scientific writing/project/Data/reducedSet/157
+-algorithm
+clustering.optics.OPTICSXi
+-opticsxi.xi
+0.2
+-optics.minpts
+15
+
+extractClustersOutputLarge
+de.lmu.ifi.dbs.elki.application.KDDCLIApplication
+-dbc.in
+/media/Datos/Dropbox/Master/S3/Research methodology and scientific writing/project/Data/reducedSet/157
+-algorithm
+clustering.optics.OPTICSXi
+-opticsxi.xi
+0.2
+-optics.minpts
+15
+-resulthandler
+ClusteringVectorDumper
+-clustering.output
+/media/Datos/Dropbox/Master/S3/Research methodology and scientific writing/project/trajectory-clustering-research/elki/optisoutputLarge
+

@@ -2,41 +2,50 @@
 # one clustered file per input file and a davies bouldin file
 # containing the number of clusters used at K-Means for each
 # input file plus the davies boulding number obtained.
+
 library(clusterSim)
-source(file = "getDBSCAN.R")
+library(foreach)
+library(doMC)
+registerDoMC(4)
+
+source(file = "getKM.R")
 calculateDBSCAN<-function(inDir,outDir)
 {
   fileList = list.files(path = inDir)
-  fileList = fileList[1:5] # use only first 5 files
+  #fileList = fileList[1:10] # use only first 5 files
   
-  bestDBVector = numeric(length(fileList)) #Create DB vector
-  clusterNumberVector = numeric(length(fileList)) #Create number of used clusters vector
-  
-  for (i in 1:length(fileList))
+  caca<-foreach(i=1:length(fileList),.combine = rbind) %dopar%
   {
     inFilePath = paste(inDir,fileList[i],sep = '')
     outFilePath = paste(outDir,fileList[i],sep = '')
-    
-    assign(fileList[i], read.csv(inFilePath)) # Open file
-    
-    #CHANGE NUMBER OF CLUSTERS TO TRY TO 10!!!!!!!!!!!!!!!!!!!!!!!
-    KM = getKM(get(fileList[i]),2) # Obtain best cluster for file i
-    
-    # Save cluster to file in output directory
-    cluster = cbind(get(fileList[i])[1:2],KM$cluster$cluster);
-    colnames(cluster) <- c("latitude", "longitude", "cluster")
-    write.table(cluster,file = outFilePath,sep = ",", row.names = FALSE, col.names = FALSE)
-    
-    # Save Davies-Bouldin info
-    bestDBVector[i] = KM$DB
-    clusterNumberVector[i] = KM$clusterNumber
-    
-    # remove file from memory
-    #rm(list = fileList[i]) #Remove the object to free memory
+    if (file.size(inFilePath) > 0)
+    {
+      assign(fileList[i], read.csv(inFilePath)) # Open file
+      
+      #CHANGE NUMBER OF CLUSTERS TO TRY TO 10!!!!!!!!!!!!!!!!!!!!!!!
+      KM = getDBSCAN(get(fileList[i]))
+      
+      # Save cluster to file in output directory
+      cluster = cbind(get(fileList[i])[1:2],KM$cluster$cluster);
+      colnames(cluster) <- c("latitude", "longitude", "cluster")
+      write.table(cluster,file = outFilePath,sep = ",", row.names = FALSE, col.names = FALSE)
+      
+      # return Davies-Bouldin info
+      return(cbind(fileList[i], KM$DB))
+      
+      # remove file from memory
+      #rm(list = fileList[i]) #Remove the object to free memory
+    }else
+    {
+      return(c(0,0))
+    }
   }
   
   # Save Davies-Bouldin info to output dir with filename 'DBinfo'
-  DBInfo = cbind(bestDBVector,clusterNumberVector);
-  colnames(DBInfo) <- c("DBValues", "clusterNumber")
-  write.table(DBInfo,file = paste(outDir,"DBInfo",sep = ''),sep = ",", row.names = FALSE, col.names = FALSE)
+  colnames(caca) <- c("user", "DBValues")
+  write.table(caca,file = paste(outDir,"DBInfo",sep = ''),sep = ",", row.names = FALSE, col.names = FALSE)
+  return(mean(as.numeric(caca[,2])))
 }
+
+
+
